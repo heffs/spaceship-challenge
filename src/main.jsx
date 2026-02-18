@@ -7,7 +7,6 @@ import { Canvas } from "@react-three/fiber";
 import { KeyboardControls } from "@react-three/drei";
 import { Perf } from "r3f-perf";
 import { EffectComposer, Bloom, DepthOfField } from "@react-three/postprocessing";
-import Drunk from "./postprocessing/Drunk.jsx";
 import Fog from "./postprocessing/Fog.jsx";
 
 createRoot(document.getElementById("root")).render(
@@ -22,6 +21,8 @@ createRoot(document.getElementById("root")).render(
                 { name: "roll_right", keys: ["KeyE"] },
                 { name: "thrust_increase", keys: ["Space"] },
                 { name: "thrust_decrease", keys: ["KeyX"] },
+                { name: "camera_next", keys: ["KeyC"] },
+                { name: "camera_previous", keys: ["KeyV"] },
             ]}
         >
             <Canvas
@@ -30,17 +31,18 @@ createRoot(document.getElementById("root")).render(
                 camera={{
                     fov: 45,
                     near: 0.1,
-                    far: 5000,
-                    position: [0, 20, -25],
+                    far: 1600,
+                    position: [0, 300, -25],
                 }}
             >
                 <Perf position="top-left" />
-                <EffectComposer>
-                    {/* <Bloom luminanceThreshold={0.9} intensity={1.0} /> */}
-                    {/* <Drunk /> */}
-                    <Fog />
-                </EffectComposer>
+
+
                 <App />
+                <EffectComposer renderTargetX-format={THREE.RGBAFormat} renderTargetY-format={THREE.RGBAFormat}>
+                    <Bloom luminanceThreshold={0.9} intensity={1.0} />
+                    {/* <Fog /> */}
+                </EffectComposer>
             </Canvas>
         </KeyboardControls>
     </StrictMode>,

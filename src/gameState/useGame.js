@@ -15,6 +15,10 @@ export default create(
             playerPosition: null,
             setPlayerPosition: (position) => set({ playerPosition: position }),
 
+            // Current time
+            currentTime: 0,
+            setCurrentTime: (time) => set({ currentTime: time }),
+
             // Phase transitions
             // Start: From splash screen to game
             start: () => {

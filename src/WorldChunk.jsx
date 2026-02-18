@@ -1,11 +1,14 @@
 import * as THREE from "three";
 import { useState, useEffect } from "react";
+import { RigidBody, HeightfieldCollider } from "@react-three/rapier";
 
 const CHUNK_SIZE = 128;
 const CHUNK_GRID_SIZE = 4;
+const GEOM_TO_COLLISION_RATIO = 4.0;
 
 export default function WorldChunk({ chunkX, chunkZ, terrainGen }) {
     const [geometry, setGeometry] = useState(null);
+    const [collisionMesh, setCollisionMesh] = useState([]);
 
     useEffect(() => {
         const handleIdle = requestIdleCallback(() => {
@@ -14,24 +17,29 @@ export default function WorldChunk({ chunkX, chunkZ, terrainGen }) {
 
             const positions = planeGeometry.attributes.position;
             const numVertices = (CHUNK_SIZE + 1) * (CHUNK_SIZE + 1);
-            const heightData = new Float32Array(numVertices);
 
             // Chunk origin in world coordinates - just for the terrain generation, so we don't have to scale the terrain
             const chunkWorldX = chunkX * CHUNK_SIZE;
             const chunkWorldZ = chunkZ * CHUNK_SIZE;
 
-            const heights = terrainGen.terrainHeights(CHUNK_SIZE + 1, CHUNK_SIZE + 1, chunkWorldX * 0.5, chunkWorldZ * 0.5, 0.5);
+            const heights = terrainGen.terrainHeights(CHUNK_SIZE + 1, CHUNK_SIZE + 1, chunkWorldX * 0.5, chunkWorldZ * 0.5, 0.5, false, false, false);
 
             for (let i = 0; i < heights.length; i++) {
                 const h = heights[i];
-                positions.setY(i, h * 80);
+                positions.setY(i, h);
             }
 
             planeGeometry.computeVertexNormals();
             planeGeometry.attributes.position.needsUpdate = true;
 
+            const collisionVerts = Math.floor(CHUNK_SIZE / GEOM_TO_COLLISION_RATIO) + 1;
+            const collisionHeights = terrainGen.terrainHeights(collisionVerts, collisionVerts, chunkWorldX * 0.5, chunkWorldZ * 0.5, 0.5 * GEOM_TO_COLLISION_RATIO, false, false, true);
+
+            console.log(heights[0], collisionHeights[0]);
+
             // console.log(`Geometry generated for chunk ${chunkX}, ${chunkZ}`);
             setGeometry(planeGeometry);
+            setCollisionMesh(collisionHeights);
         }, { timeout: 1000 });
 
         return () => {
@@ -44,8 +52,16 @@ export default function WorldChunk({ chunkX, chunkZ, terrainGen }) {
     }
 
     return (
-        <mesh geometry={geometry} position={[chunkX * CHUNK_SIZE * CHUNK_GRID_SIZE, 0, chunkZ * CHUNK_SIZE * CHUNK_GRID_SIZE]} receiveShadow>
-            <meshStandardMaterial color="#b06948" wireframe={false} />
-        </mesh>
+        <RigidBody type="fixed" colliders={false} position={[chunkX * CHUNK_SIZE * CHUNK_GRID_SIZE, 0, chunkZ * CHUNK_SIZE * CHUNK_GRID_SIZE]}>
+            <HeightfieldCollider args={[
+                CHUNK_SIZE / GEOM_TO_COLLISION_RATIO, CHUNK_SIZE / GEOM_TO_COLLISION_RATIO, [...collisionMesh],
+                { x: CHUNK_SIZE * CHUNK_GRID_SIZE, y: 1, z: CHUNK_SIZE * CHUNK_GRID_SIZE }
+            ]} />
+            <mesh geometry={geometry} receiveShadow>
+                <meshStandardMaterial color="#b06948" wireframe={false} />
+            </mesh>
+        </RigidBody>
+
+
     );
 }

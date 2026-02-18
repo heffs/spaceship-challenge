@@ -4,11 +4,17 @@ import Player from "./Player";
 import { Physics } from "@react-three/rapier";
 import { useRef, useEffect } from "react";
 import World from "./World";
+import useGame from "./gameState/useGame";
+import { useFrame } from "@react-three/fiber";
 
 function App() {
     const playerRef = useRef();
     const canvas2DRef = useRef();
-    const hash = "test";
+    const hash = "test2";
+
+    useFrame((state, delta) => {
+        useGame.setState({ currentTime: state.clock.elapsedTime });
+    });
 
     useEffect(() => {
         // Create a 2D canvas and set reference
@@ -18,7 +24,7 @@ function App() {
         canvas.style.position = "fixed";
         canvas.style.top = "0";
         canvas.style.left = "0";
-        canvas.style.zIndex = "1000";
+        canvas.style.zIndex = "1280";
         document.body.appendChild(canvas);
         canvas2DRef.current = canvas;
     }, []);
@@ -26,15 +32,12 @@ function App() {
     return (
         <>
 
-            <Physics debug={true} gravity={[0, -0.1, 0]}>
-                <mesh position={[0, 12, 0]}>
-                    <boxGeometry args={[2, 2, 2]} />
-                    <meshStandardMaterial color="red" />
-                </mesh>
-                <axesHelper args={[10]} />
+            <Physics debug={false} gravity={[0, -0.5, 0]}>
+                {/* <axesHelper args={[40]} /> */}
                 <Player ref={playerRef} />
+                {/* <Environment files="./lunar-surface.hdr" background={true} /> */}
                 <World hash={hash} />
-                <Environment files="./lunar-surface.hdr" background={true} />
+                <fog attach="fog" args={[0xebb18d, 768, 1024]} />
             </Physics>
         </>
     );

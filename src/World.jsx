@@ -5,7 +5,7 @@ import RNG from "./RNG";
 import init, { TerrainGen } from "./wasm/dsed_terrain.js";
 const CHUNK_SIZE = 128;
 const CHUNK_GRID_SIZE = 4;
-const RENDER_DISTANCE = 3;
+const RENDER_DISTANCE = 2;
 
 function worldToChunk(worldX, worldZ) {
     return {
@@ -23,6 +23,7 @@ export default function World({ hash }) {
     useEffect(() => {
         init().then(() => {
             const gen = TerrainGen.new(hash);
+            gen.setAmplitude(200);
             setTerrainGen(gen);
             console.log("TerrainGen initialized");
         });
@@ -60,7 +61,8 @@ export default function World({ hash }) {
                     const chunkZ = currentChunk.current.chunkZ + z;
                     const chunkId = `${chunkX}_${chunkZ}`;
                     if (!prevChunks.has(chunkId)) {
-                        nextChunks.set(chunkId, <WorldChunk key={chunkId} chunkX={chunkX} chunkZ={chunkZ} terrainGen={terrainGen} />);
+                        nextChunks.set(chunkId,
+                            <WorldChunk key={chunkId} chunkX={chunkX} chunkZ={chunkZ} terrainGen={terrainGen} />);
                     }
                     requiredChunks.add(`${currentChunk.current.chunkX + x}_${currentChunk.current.chunkZ + z}`);
                 }
