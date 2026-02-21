@@ -13,8 +13,7 @@ export class TerrainGen {
      *     * @returns The height at the given x and y coordinate.
      *
      */
-    heightAt(x: number, y: number, octaves: number, frequency: number, lacunarity: number, amplitude: number, persistence: number): number;
-    logRandom(): void;
+    heightAt(x: number, y: number, octaves: number, frequency: number, lacunarity: number, amplitude: number, persistence: number, offset: number): number;
     static new(hash: string): TerrainGen;
     /**
      *
@@ -27,7 +26,7 @@ export class TerrainGen {
      *     * @returns A 2D array of terrain heights (A Float32Array in JavaScript)
      *
      */
-    terrainHeights(width: number, height: number, origin_x: number, origin_y: number, step: number, octaves: number, frequency: number, lacunarity: number, amplitude: number, persistence: number, rotate: boolean): Float32Array;
+    terrainHeights(width: number, height: number, origin_x: number, origin_y: number, step: number, octaves: number, frequency: number, lacunarity: number, amplitude: number, persistence: number, offset: number, rotate: boolean): Float32Array;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -36,9 +35,8 @@ export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly __wbg_terraingen_free: (a: number, b: number) => void;
     readonly terraingen_new: (a: number, b: number) => number;
-    readonly terraingen_logRandom: (a: number) => void;
-    readonly terraingen_terrainHeights: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => [number, number];
-    readonly terraingen_heightAt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+    readonly terraingen_terrainHeights: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number) => [number, number];
+    readonly terraingen_heightAt: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

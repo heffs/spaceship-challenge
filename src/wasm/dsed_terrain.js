@@ -32,14 +32,12 @@ export class TerrainGen {
      * @param {number} lacunarity
      * @param {number} amplitude
      * @param {number} persistence
+     * @param {number} offset
      * @returns {number}
      */
-    heightAt(x, y, octaves, frequency, lacunarity, amplitude, persistence) {
-        const ret = wasm.terraingen_heightAt(this.__wbg_ptr, x, y, octaves, frequency, lacunarity, amplitude, persistence);
+    heightAt(x, y, octaves, frequency, lacunarity, amplitude, persistence, offset) {
+        const ret = wasm.terraingen_heightAt(this.__wbg_ptr, x, y, octaves, frequency, lacunarity, amplitude, persistence, offset);
         return ret;
-    }
-    logRandom() {
-        wasm.terraingen_logRandom(this.__wbg_ptr);
     }
     /**
      * @param {string} hash
@@ -71,11 +69,12 @@ export class TerrainGen {
      * @param {number} lacunarity
      * @param {number} amplitude
      * @param {number} persistence
+     * @param {number} offset
      * @param {boolean} rotate
      * @returns {Float32Array}
      */
-    terrainHeights(width, height, origin_x, origin_y, step, octaves, frequency, lacunarity, amplitude, persistence, rotate) {
-        const ret = wasm.terraingen_terrainHeights(this.__wbg_ptr, width, height, origin_x, origin_y, step, octaves, frequency, lacunarity, amplitude, persistence, rotate);
+    terrainHeights(width, height, origin_x, origin_y, step, octaves, frequency, lacunarity, amplitude, persistence, offset, rotate) {
+        const ret = wasm.terraingen_terrainHeights(this.__wbg_ptr, width, height, origin_x, origin_y, step, octaves, frequency, lacunarity, amplitude, persistence, offset, rotate);
         var v1 = getArrayF32FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
         return v1;
@@ -88,9 +87,6 @@ function __wbg_get_imports() {
         __proto__: null,
         __wbg___wbindgen_throw_be289d5034ed271b: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
-        },
-        __wbg_log_5b2213cbbdf1f8c8: function(arg0, arg1) {
-            console.log(getStringFromWasm0(arg0, arg1));
         },
         __wbindgen_init_externref_table: function() {
             const table = wasm.__wbindgen_externrefs;

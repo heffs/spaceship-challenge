@@ -9,11 +9,13 @@ import useGame from "./gameState/useGame";
 import { useFrame } from "@react-three/fiber";
 import init, { TerrainGen } from "./wasm/dsed_terrain.js";
 import { INTERFACE_WIDTH, INTERFACE_HEIGHT } from "./constants";
+import { usePageVisibility } from "./usePageVisibility";
 
 function App({ hash }) {
     const playerRef = useRef();
     const canvas2DRef = useRef();
     const [terrainGen, setTerrainGen] = useState(null);
+    const isPageVisible = usePageVisibility();
 
     useFrame((state, delta) => {
         useGame.setState({ currentTime: state.clock.elapsedTime });
@@ -24,7 +26,6 @@ function App({ hash }) {
         init().then(() => {
             const gen = TerrainGen.new(hash);
             setTerrainGen(gen);
-            console.log("TerrainGen initialized");
         });
     }, [hash]);
 
@@ -46,7 +47,7 @@ function App({ hash }) {
     return (
         <>
 
-            <Physics debug={false} gravity={[0, -1.0, 0]}>
+            <Physics debug={false} paused={!isPageVisible} gravity={[0, -1.0, 0]}>
                 {/* <axesHelper args={[40]} /> */}
                 <Player ref={playerRef} />
                 <World terrainGen={terrainGen} />

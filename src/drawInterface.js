@@ -215,19 +215,19 @@ function drawHeightWarning(ctx, altitude, cx, cy, w) {
 function drawAltitude(ctx, altitude, cx, cy) {
     ctx.fillStyle = interfaceColors.brightAmber;
     ctx.textAlign = "left";
-    ctx.fillText("Altitude:", cx, cy);
+    ctx.fillText("Alt:", cx, cy);
     ctx.textAlign = "right";
-    ctx.fillText(altitude.toFixed(1) + " m", cx + 220, cy);
+    ctx.fillText(altitude.toFixed(1) + " m", cx + 120, cy);
 }
 
 function drawControls(ctx, w, h) {
     ctx.strokeRect(8, 8, w - 16, h - 16);
 
     drawKey(ctx, "Q", "Roll left", 20, 35, true);
-    drawKey(ctx, "W", "Pitch up", 95, 35, true);
+    drawKey(ctx, "W", "Pitch down", 95, 35, true);
     drawKey(ctx, "E", "Roll right", 170, 35, true);
     drawKey(ctx, "A", "Yaw left", 20, 105, false);
-    drawKey(ctx, "S", "Pitch down", 95, 105, false);
+    drawKey(ctx, "S", "Pitch up", 95, 105, false);
     drawKey(ctx, "D", "Yaw right", 170, 105, false);
     drawKey(ctx, "X", "Thrust decrease", 280, 35, true);
     drawKey(ctx, "Sp", "Thrust increase", 280, 105, false);
@@ -257,4 +257,4 @@ function drawKey(ctx, label, text, x, y, above=false) {
 
 }
 
-export { drawAttitudeIndicator, drawMainThrusterIndicator, drawSpeedIndicators, drawHeadingIndicator, drawHeightWarning, drawControls };
+export { drawAttitudeIndicator, drawMainThrusterIndicator, drawSpeedIndicators, drawHeadingIndicator, drawHeightWarning, drawControls, drawAltitude };

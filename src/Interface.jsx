@@ -2,7 +2,7 @@ import { useKeyboardControls } from "@react-three/drei";
 import useGame from "./gameState/useGame";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useState } from "react";
-import { drawAttitudeIndicator, drawMainThrusterIndicator, drawSpeedIndicators, drawHeadingIndicator, drawHeightWarning, drawControls } from "./drawInterface";
+import { drawAttitudeIndicator, drawMainThrusterIndicator, drawSpeedIndicators, drawHeadingIndicator, drawHeightWarning, drawControls, drawAltitude } from "./drawInterface";
 import * as THREE from "three";
 import { interfaceColors, worldToChunk } from "./utils";
 import { INTERFACE_WIDTH, INTERFACE_HEIGHT } from "./constants";
@@ -75,6 +75,7 @@ export default function Interface({ canvas2DRef }) {
                 drawSpeedIndicators(context, playerVelocity, 20, 210);
                 drawHeadingIndicator(context, playerRotation, playerVelocity, 320, 120, 60);
                 drawHeightWarning(context, playerPosition.y, 10, 240, w - 20);
+                drawAltitude(context, playerPosition.y, 260, 230);
             }
         } else {
             const w = INTERFACE_WIDTH;
