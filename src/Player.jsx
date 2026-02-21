@@ -11,15 +11,16 @@ import { SUN_OFFSET } from "./constants";
 import { usePageVisibility } from "./usePageVisibility";
 
 const cameraPositions = [
-    { name: "high rear", position: new THREE.Vector3(0, 90, -25) },
-    { name: "default", position: new THREE.Vector3(0, 20, -25) },
-    { name: "far", position: new THREE.Vector3(0, 60, -80) },
-    { name: "top", position: new THREE.Vector3(0, 70, -5) },
-    { name: "rear left", position: new THREE.Vector3(-30, 30, -25) },
-    { name: "rear right", position: new THREE.Vector3(30, 30, -25) },
     { name: "behind", position: new THREE.Vector3(0, 5, -45) },
-    { name: "left", position: new THREE.Vector3(-40, -6, 0) },
-    { name: "right", position: new THREE.Vector3(40, -6, 0) },
+    { name: "default", position: new THREE.Vector3(0, 30, -50) },
+    { name: "high rear", position: new THREE.Vector3(0, 90, -55) },
+    { name: "rear left", position: new THREE.Vector3(30, 30, -25) },
+    { name: "rear right", position: new THREE.Vector3(-30, 30, -25) },
+    { name: "left", position: new THREE.Vector3(40, -6, 0) },
+    { name: "top", position: new THREE.Vector3(0, 70, -5) },
+    { name: "right", position: new THREE.Vector3(-40, -6, 0) },
+    { name: "front", position: new THREE.Vector3(0, 0, 40) },
+    { name: "low rear", position: new THREE.Vector3(0, -60, -45) },
 ]
 
 export default function Player() {
@@ -69,10 +70,10 @@ export default function Player() {
             let cameraIndex = useGame.getState().cameraIndex;
             switch (event.code) {
                 case "KeyC":
-                    useGame.setState({ cameraIndex: (cameraIndex + 1) % cameraPositions.length });
+                    useGame.setState({ cameraIndex: (cameraIndex - 1  + cameraPositions.length) % cameraPositions.length });
                     break;
                 case "KeyV":
-                    useGame.setState({ cameraIndex: (cameraIndex - 1 + cameraPositions.length) % cameraPositions.length });
+                    useGame.setState({ cameraIndex: (cameraIndex + 1) % cameraPositions.length });
                     break;
                 case "KeyK":
                     const showInstruments = useGame.getState().showInstruments;
