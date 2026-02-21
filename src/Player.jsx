@@ -1,4 +1,4 @@
-import { useKeyboardControls, CameraControls } from "@react-three/drei";
+import { useKeyboardControls } from "@react-three/drei";
 import useGame from "./gameState/useGame";
 import { useRef, useEffect, useState } from "react";
 import { xyz } from "./helpers";
@@ -6,7 +6,7 @@ import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { useFrame, useThree } from "@react-three/fiber";
 import Ship from "./models/Ship";
 import * as THREE from "three";
-import { actualThrust, worldToChunk } from "./utils";
+import { actualThrust } from "./utils";
 import { SUN_OFFSET } from "./constants";
 import { usePageVisibility } from "./usePageVisibility";
 

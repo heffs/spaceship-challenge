@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import WorldChunk from "./WorldChunk";
 import useGame from "./gameState/useGame";
-import RNG from "./RNG";
 import { CHUNK_SIZE, CHUNK_GRID_SIZE, RENDER_DISTANCE } from "./constants";
 import { worldToChunk } from "./utils";
 
