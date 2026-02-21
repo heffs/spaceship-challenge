@@ -6,15 +6,19 @@ import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { useFrame, useThree } from "@react-three/fiber";
 import Ship from "./models/Ship";
 import * as THREE from "three";
-import { rotateVectorByQuaternion } from "./utils";
+import { actualThrust, worldToChunk } from "./utils";
+import { SUN_OFFSET } from "./constants";
 
 const cameraPositions = [
+    { name: "high rear", position: new THREE.Vector3(0, 90, -25)},
     { name: "default", position: new THREE.Vector3(0, 20, -25) },
     { name: "far", position: new THREE.Vector3(0, 60, -80) },
     { name: "top", position: new THREE.Vector3(0, 70, -5) },
     { name: "rear left", position: new THREE.Vector3(-30, 30, -25) },
     { name: "rear right", position: new THREE.Vector3(30, 30, -25) },
     { name: "behind", position: new THREE.Vector3(0, 5, -45) },
+    { name: "left", position: new THREE.Vector3(-40, -6, 0) },
+    { name: "right", position: new THREE.Vector3(40, -6, 0) },
 ]
 
 export default function Player() {
@@ -22,15 +26,17 @@ export default function Player() {
     const cameraToShip = useRef(new THREE.Vector3(0, 20, -45));
     const [smoothedCameraPosition] = useState(() => new THREE.Vector3())
     const [smoothedCameraTarget] = useState(() => new THREE.Vector3())
-    const [currentCameraPosition, setCurrentCameraPosition] = useState(0);
-    const [cameraJustChanged, setCameraJustChanged] = useState(false);
+    const [yawLeftActive, setYawLeftActive] = useState(false);
+    const [yawRightActive, setYawRightActive] = useState(false);
+    const [rollLeftActive, setRollLeftActive] = useState(false);
+    const [rollRightActive, setRollRightActive] = useState(false);
+
     const shipRigidBodyRef = useRef();
-    const cameraControlsRef = useRef();
     const directionalLightRef = useRef();
     const shadowCameraHelperRef = useRef();
     const { scene } = useThree();
 
-    // Create camera helper for shadow camera
+    // Shadow camera helper
     // useEffect(() => {
     //     if (directionalLightRef.current && directionalLightRef.current.shadow) {
     //         const helper = new CameraHelper(directionalLightRef.current.shadow.camera);
@@ -52,6 +58,30 @@ export default function Player() {
     const quit = useGame((state) => state.quit);
     const restart = useGame((state) => state.restart);
     const setPlayerPosition = useGame((state) => state.setPlayerPosition);
+    const setShipMainThrust = useGame((state) => state.setShipMainThrust);
+    const shipMainThrust = useGame((state) => state.shipMainThrust);
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            let cameraIndex = useGame.getState().cameraIndex;
+            switch (event.code) {
+                case "KeyC":
+                    useGame.setState({ cameraIndex: (cameraIndex + 1) % cameraPositions.length });
+                    break;
+                case "KeyV":
+                    useGame.setState({ cameraIndex: (cameraIndex - 1 + cameraPositions.length) % cameraPositions.length });
+                    break;
+                case "KeyK":
+                    const showInstruments = useGame.getState().showInstruments;
+                    useGame.setState({ showInstruments: !showInstruments });
+                    break;
+            }
+        }
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        }
+    }, []);
 
     /**
      * useFrame
@@ -60,10 +90,6 @@ export default function Player() {
         if (!shipRigidBodyRef.current) return;
 
         const shipPosition = shipRigidBodyRef.current.translation();
-
-        // Update player position in store
-        setPlayerPosition({ x: shipPosition.x, y: shipPosition.y, z: shipPosition.z });
-
 
         // Handle keyboard input
         const {
@@ -75,8 +101,6 @@ export default function Player() {
             roll_right,
             thrust_increase,
             thrust_decrease,
-            camera_next,
-            camera_previous,
         } = getKeys();
 
         // Initialise impulse and torque
@@ -84,8 +108,13 @@ export default function Player() {
         const torque = xyz(0, 0, 0);
 
         // Set impulse and torque strengths
-        const impulseStrength = 1500 * delta;
-        const torqueStrength = 800 * delta;
+        const impulseStrength = 1200 * delta;
+        const torqueStrength = 900 * delta;
+
+        setYawLeftActive(false);
+        setYawRightActive(false);
+        setRollLeftActive(false);
+        setRollRightActive(false);
 
         if (pitch_up) {
             torque.x -= torqueStrength;
@@ -95,40 +124,35 @@ export default function Player() {
         }
         if (yaw_left) {
             torque.y += torqueStrength;
+            setYawLeftActive(true);
         }
         if (yaw_right) {
             torque.y -= torqueStrength;
+            setYawRightActive(true);
         }
         if (roll_left) {
             torque.z -= torqueStrength;
+            setRollLeftActive(true);
         }
         if (roll_right) {
             torque.z += torqueStrength;
+            setRollRightActive(true);
         }
         if (thrust_increase) {
-            impulse.y += impulseStrength;
-
+            if (shipMainThrust < 1) {
+                setShipMainThrust(shipMainThrust + 0.3 * delta);
+            }
         }
         if (thrust_decrease) {
-            impulse.y -= impulseStrength;
-            console.log(shipRigidBodyRef.current.rotation());
+            if (shipMainThrust > 0) {
+                setShipMainThrust(shipMainThrust - 0.3 * delta);
+            }
         }
 
-        if (camera_next) {
-            if (cameraJustChanged) {
-                setCameraJustChanged(false);
-                return;
-            }
-            setCurrentCameraPosition((currentCameraPosition + 1) % cameraPositions.length);
-            setCameraJustChanged(true);
-        } else if (camera_previous) {
-            if (cameraJustChanged) {
-                setCameraJustChanged(false);
-                return;
-            }
-            setCurrentCameraPosition((currentCameraPosition - 1 + cameraPositions.length) % cameraPositions.length);
-            setCameraJustChanged(true);
-        }
+        // Control main thrust based on altitude
+        const altitude = shipPosition.y;
+
+        impulse.y += impulseStrength * actualThrust(shipMainThrust, altitude);
 
         // Translate local torque to world torque
         const localTorque = new THREE.Vector3(torque.x, torque.y, torque.z);
@@ -146,35 +170,28 @@ export default function Player() {
             shipRigidBodyRef.current.applyTorqueImpulse(worldTorque);
         }
 
-        // Update camera position
-        // if (cameraControlsRef.current) {
-        //     const newCameraPosition = new THREE.Vector3(
-        //         shipPosition.x + cameraToShip.current.x,
-        //         shipPosition.y + cameraToShip.current.y,
-        //         shipPosition.z + cameraToShip.current.z,
-        //     );
-        //     cameraControlsRef.current.setLookAt(
-        //         newCameraPosition.x, newCameraPosition.y, newCameraPosition.z, 
-        //         shipPosition.x, shipPosition.y, shipPosition.z);
-        // }
 
         // Update directional light position and look at the ship
         if (directionalLightRef.current) {
-            directionalLightRef.current.position.set(shipPosition.x + 10, shipPosition.y + 10, shipPosition.z + 10);
+            directionalLightRef.current.position.set(
+                shipPosition.x + SUN_OFFSET.x, 
+                shipPosition.y + SUN_OFFSET.y, 
+                shipPosition.z + SUN_OFFSET.z);
             directionalLightRef.current.target.position.set(shipPosition.x, shipPosition.y, shipPosition.z);
             directionalLightRef.current.target.updateMatrixWorld();
         }
 
         /**
          * Camera
-         * Rotate camera position by ship rotation
         */
         const bodyPosition = shipRigidBodyRef.current.translation()
         const bodyRotation = shipRigidBodyRef.current.rotation()
+        // Rotate camera offset by ship rotation
         const cameraQuaternion = new THREE.Quaternion(bodyRotation.x, bodyRotation.y, bodyRotation.z, bodyRotation.w);
-        // const cameraOffset = rotateVectorByQuaternion(cameraPositions[currentCameraPosition].position, bodyRotation);
-        const cameraOffset = cameraPositions[currentCameraPosition].position.clone().applyQuaternion(cameraQuaternion);
+        const cameraIndex = useGame.getState().cameraIndex;
+        const cameraOffset = cameraPositions[cameraIndex].position.clone().applyQuaternion(cameraQuaternion);
 
+        // Offset camera position from ship body
         const cameraPosition = new THREE.Vector3()
         cameraPosition.copy(bodyPosition)
         cameraPosition.x += cameraOffset.x;
@@ -194,21 +211,15 @@ export default function Player() {
         state.camera.position.copy(smoothedCameraPosition)
         state.camera.up.copy(shipUp)
         state.camera.lookAt(smoothedCameraTarget)
-    });
 
-    // useEffect((state) => {
-    //     cameraControlsRef.current.addEventListener("control", () => {
-    //         // console.log("control");
-    //         const cameraPosition = cameraControlsRef.current.getPosition();
-    //         const shipPosition = shipRigidBodyRef.current.translation();
-    //         cameraToShip.current = new THREE.Vector3(
-    //             cameraPosition.x - shipPosition.x,
-    //             cameraPosition.y - shipPosition.y,
-    //             cameraPosition.z - shipPosition.z,
-    //         );
-    //         // console.log(cameraToShip);
-    //     });
-    // }, []);
+        useGame.setState({
+            cameraPosition: cameraPosition,
+            cameraOrientation: cameraQuaternion,
+            playerPosition: shipPosition,
+            playerRotation: shipRigidBodyRef.current.rotation(),
+            playerVelocity: shipRigidBodyRef.current.linvel(),
+        });
+    });
 
     return (
         <>
@@ -216,7 +227,7 @@ export default function Player() {
                 {/* <CameraControls ref={cameraControlsRef} smoothTime={2.0} /> */}
                 <directionalLight
                     ref={directionalLightRef}
-                    position={[10, 10, 10]}
+                    position={[0, 20, 0]}
                     intensity={4}
                     castShadow
                     shadow-mapSize={[2048, 2048]}
@@ -227,13 +238,14 @@ export default function Player() {
                     shadow-camera-near={0.1}
                     shadow-camera-far={500}
                 />
-                <RigidBody ref={shipRigidBodyRef} canSleep={false} colliders={false} position={[0, 280, 0]}  >
-                    <CuboidCollider args={[3, 4.5, 3.2]} position={[0, 6, -1]} />
-                    <CuboidCollider args={[2, 1, 2.4]} position={[0, 0.5, -0.75]} />
-                    <CuboidCollider args={[3.1, 0.6, 3.1]} position={[0, -1.2, -1.6]} rotation={[0, Math.PI / 4, 0]} />
-                    <CuboidCollider args={[1.1, 2.1, 2.4]} position={[-4.5, 5.1, -1]} />
-                    <CuboidCollider args={[1.1, 2.1, 2.4]} position={[4.5, 5.1, -1]} />
-                    <Ship castShadow receiveShadow />
+                <ambientLight intensity={0.1} color={0xebb18d} />
+                <RigidBody ref={shipRigidBodyRef} canSleep={false} colliders={false} position={[0, 280, 0]} linearDamping={0.01} angularDamping={0.1}  >
+                    <CuboidCollider args={[3, 4.5, 3.2]} position={[0, 0.75, 0]} /> {/* Main body */}
+                    <CuboidCollider args={[2, 1, 2.4]} position={[0, -4.75, 0.25]} /> {/* Crew section */}
+                    <CuboidCollider args={[3.1, 0.8, 3.1]} position={[0, -6.55, -0.6]} rotation={[0, Math.PI / 4, 0]} /> {/* Landing gear */}
+                    <CuboidCollider args={[1.1, 2.1, 2.4]} position={[-4.5, -0.15, 0]} /> {/* Port thrusters */}
+                    <CuboidCollider args={[1.1, 2.1, 2.4]} position={[4.5, -0.15, 0]} /> {/* Starboard thrusters */}
+                    <Ship castShadow receiveShadow yawLeftActive={yawLeftActive} yawRightActive={yawRightActive} rollLeftActive={rollLeftActive} rollRightActive={rollRightActive} />
                 </RigidBody>
             </group>
         </>

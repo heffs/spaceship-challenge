@@ -9,3 +9,8 @@ body,
     overflow: hidden;
     background: #ebb18d;
 }
+
+@font-face {
+    font-family: "Coctab";
+    src: url("/coctab.ttf") format("truetype");
+}

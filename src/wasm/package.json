@@ -1,0 +1,15 @@
+{
+  "name": "dsed-terrain",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "dsed_terrain_bg.wasm",
+    "dsed_terrain.js",
+    "dsed_terrain.d.ts"
+  ],
+  "main": "dsed_terrain.js",
+  "types": "dsed_terrain.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

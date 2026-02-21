@@ -11,9 +11,27 @@ export default create(
             // Phases
             phase: "splash",
 
-            // Player position
+            showInstruments: false,
+            setShowInstruments: (show) => set({ showInstruments: show }),
+
+            // Player position, rotation, and velocity
             playerPosition: null,
             setPlayerPosition: (position) => set({ playerPosition: position }),
+            playerRotation: null,
+            setPlayerRotation: (rotation) => set({ playerRotation: rotation }),
+            playerVelocity: null,
+            setPlayerVelocity: (velocity) => set({ playerVelocity: velocity }),
+
+            shipMainThrust: 0.445,
+            setShipMainThrust: (thrust) => set({ shipMainThrust: thrust }),
+            
+            // Camera position and orientation
+            cameraIndex: 0,
+            setCameraIndex: (index) => set({ cameraIndex: index }),
+            cameraPosition: null,
+            setCameraPosition: (position) => set({ cameraPosition: position }),
+            cameraOrientation: null,
+            setCameraOrientation: (orientation) => set({ cameraOrientation: orientation }),
 
             // Current time
             currentTime: 0,

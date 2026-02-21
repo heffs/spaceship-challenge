@@ -1,11 +1,12 @@
 uniform vec2 uResolution;
 uniform float uTime;
 uniform sampler2D uNoiseTexture;
+uniform float uPower;
 varying vec2 vUv;
 
 const float cAngle = 0.0;
 const float cSpeed = 1.0;
-const float cPower = 100.0;
+// const float cPower = 100.0;
 const float cSize = 80.0;
 const int cNoiseDepth = 5;
 const float cNoiseStrength = 0.35;
@@ -37,7 +38,7 @@ void main() {
     float ydif = yinc / max(ySlope, 0.1);
 
     float dist = distance (position, uv);
-    dist = abs(slope - inc) * 0.1 + dist/(2.0 * cPower);
+    dist = abs(slope - inc) * 0.1 + dist/(2.0 * uPower);
     if (inc > 2.0 || inc < -2.0) dist *= dist;
     if ((xdif < 0.0 && ydif < 0.0) || (ydif < 0.0 && xdif > 0.0)) dist = 10.0;
 

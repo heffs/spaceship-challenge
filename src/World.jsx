@@ -2,32 +2,23 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import WorldChunk from "./WorldChunk";
 import useGame from "./gameState/useGame";
 import RNG from "./RNG";
-import init, { TerrainGen } from "./wasm/dsed_terrain.js";
-const CHUNK_SIZE = 128;
-const CHUNK_GRID_SIZE = 4;
-const RENDER_DISTANCE = 2;
+import { CHUNK_SIZE, CHUNK_GRID_SIZE, RENDER_DISTANCE } from "./constants";
+import { worldToChunk } from "./utils";
 
-function worldToChunk(worldX, worldZ) {
-    return {
-        chunkX: Math.floor(worldX / (CHUNK_SIZE * CHUNK_GRID_SIZE) + 0.5),
-        chunkZ: Math.floor(worldZ / (CHUNK_SIZE * CHUNK_GRID_SIZE) + 0.5),
-    };
-}
-
-export default function World({ hash }) {
+export default function World({ terrainGen }) {
     const playerPosition = useGame((state) => state.playerPosition);
     const [chunks, setChunks] = useState(() => new Map());
-    const [terrainGen, setTerrainGen] = useState(null);
+    // const [terrainGen, setTerrainGen] = useState(null);
 
     // Initialize WASM terrain generator once
-    useEffect(() => {
-        init().then(() => {
-            const gen = TerrainGen.new(hash);
-            gen.setAmplitude(200);
-            setTerrainGen(gen);
-            console.log("TerrainGen initialized");
-        });
-    }, [hash]);
+    // useEffect(() => {
+    //     init().then(() => {
+    //         const gen = TerrainGen.new(hash);
+    //         gen.setAmplitude(200);
+    //         setTerrainGen(gen);
+    //         console.log("TerrainGen initialized");
+    //     });
+    // }, [hash]);
 
     // Keep track of the current chunk and chunk id
     const currentChunk = useRef({ chunkX: 0, chunkZ: 0 });
@@ -49,8 +40,6 @@ export default function World({ hash }) {
             return;
         }
 
-        console.log("Updating chunks");
-        console.log(terrainGen);
         setChunks((prevChunks) => {
             const nextChunks = new Map(prevChunks);
             // Add needed chunks and create list of required chunks
@@ -76,7 +65,7 @@ export default function World({ hash }) {
             }
             return nextChunks;
         });
-    }, [currentChunkId, hash, terrainGen]);
+    }, [currentChunkId, terrainGen]);
 
     return (
         <>

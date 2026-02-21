@@ -2,9 +2,7 @@ import * as THREE from "three";
 import { useState, useEffect } from "react";
 import { RigidBody, HeightfieldCollider } from "@react-three/rapier";
 
-const CHUNK_SIZE = 128;
-const CHUNK_GRID_SIZE = 4;
-const GEOM_TO_COLLISION_RATIO = 4.0;
+import { CHUNK_SIZE, CHUNK_GRID_SIZE, GEOM_TO_COLLISION_RATIO, OCTAVES, FREQUENCY, LACUNARITY, AMPLITUDE, PERSISTENCE } from "./constants";
 
 export default function WorldChunk({ chunkX, chunkZ, terrainGen }) {
     const [geometry, setGeometry] = useState(null);
@@ -22,7 +20,11 @@ export default function WorldChunk({ chunkX, chunkZ, terrainGen }) {
             const chunkWorldX = chunkX * CHUNK_SIZE;
             const chunkWorldZ = chunkZ * CHUNK_SIZE;
 
-            const heights = terrainGen.terrainHeights(CHUNK_SIZE + 1, CHUNK_SIZE + 1, chunkWorldX * 0.5, chunkWorldZ * 0.5, 0.5, false, false, false);
+
+            const heights = terrainGen.terrainHeights(CHUNK_SIZE + 1, CHUNK_SIZE + 1, chunkWorldX * 0.5, chunkWorldZ * 0.5, 0.5, 
+                OCTAVES, FREQUENCY, LACUNARITY, AMPLITUDE, PERSISTENCE,
+                false);
+
 
             for (let i = 0; i < heights.length; i++) {
                 const h = heights[i];
@@ -32,10 +34,12 @@ export default function WorldChunk({ chunkX, chunkZ, terrainGen }) {
             planeGeometry.computeVertexNormals();
             planeGeometry.attributes.position.needsUpdate = true;
 
-            const collisionVerts = Math.floor(CHUNK_SIZE / GEOM_TO_COLLISION_RATIO) + 1;
-            const collisionHeights = terrainGen.terrainHeights(collisionVerts, collisionVerts, chunkWorldX * 0.5, chunkWorldZ * 0.5, 0.5 * GEOM_TO_COLLISION_RATIO, false, false, true);
 
-            console.log(heights[0], collisionHeights[0]);
+            const collisionVerts = Math.floor(CHUNK_SIZE / GEOM_TO_COLLISION_RATIO) + 1;
+            const collisionHeights = terrainGen.terrainHeights(collisionVerts, collisionVerts, chunkWorldX * 0.5, chunkWorldZ * 0.5, 0.5 * GEOM_TO_COLLISION_RATIO,
+                OCTAVES, FREQUENCY, LACUNARITY, AMPLITUDE, PERSISTENCE,
+                true);
+
 
             // console.log(`Geometry generated for chunk ${chunkX}, ${chunkZ}`);
             setGeometry(planeGeometry);

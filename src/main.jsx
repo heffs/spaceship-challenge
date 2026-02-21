@@ -9,6 +9,8 @@ import { Perf } from "r3f-perf";
 import { EffectComposer, Bloom, DepthOfField } from "@react-three/postprocessing";
 import Fog from "./postprocessing/Fog.jsx";
 
+const hash = "test2";
+
 createRoot(document.getElementById("root")).render(
     <StrictMode>
         <KeyboardControls
@@ -21,8 +23,9 @@ createRoot(document.getElementById("root")).render(
                 { name: "roll_right", keys: ["KeyE"] },
                 { name: "thrust_increase", keys: ["Space"] },
                 { name: "thrust_decrease", keys: ["KeyX"] },
-                { name: "camera_next", keys: ["KeyC"] },
-                { name: "camera_previous", keys: ["KeyV"] },
+                // { name: "camera_next", keys: ["KeyC"] },
+                // { name: "camera_previous", keys: ["KeyV"] },
+                // { name: "show_instruments", keys: ["KeyK"] },
             ]}
         >
             <Canvas
@@ -38,7 +41,7 @@ createRoot(document.getElementById("root")).render(
                 <Perf position="top-left" />
 
 
-                <App />
+                <App hash={hash} />
                 <EffectComposer renderTargetX-format={THREE.RGBAFormat} renderTargetY-format={THREE.RGBAFormat}>
                     <Bloom luminanceThreshold={0.9} intensity={1.0} />
                     {/* <Fog /> */}
