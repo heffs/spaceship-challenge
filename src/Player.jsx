@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { actualThrust } from "./utils";
 import { SUN_OFFSET } from "./constants";
 import { usePageVisibility } from "./usePageVisibility";
+import { useControls } from "leva";
 
 const cameraPositions = [
     { name: "behind", position: new THREE.Vector3(0, 5, -45) },
@@ -24,8 +25,14 @@ const cameraPositions = [
 ]
 
 export default function Player() {
+
+    const { thrustImpulse, torqueImpulse, linearDamping, angularDamping } = useControls({
+        thrustImpulse: { value: 1200, min: 100, max: 4000, step: 100 },
+        torqueImpulse: { value: 900, min: 100, max: 3000, step: 100 },
+        linearDamping: { value: 0.01, min: 0, max: 0.25, step: 0.01 },
+        angularDamping: { value: 0.1, min: 0, max: 1.0, step: 0.01 },
+    });
     const [subscribeKeys, getKeys] = useKeyboardControls();
-    const cameraToShip = useRef(new THREE.Vector3(0, 20, -45));
     const [smoothedCameraPosition] = useState(() => new THREE.Vector3())
     const [smoothedCameraTarget] = useState(() => new THREE.Vector3())
     const [yawLeftActive, setYawLeftActive] = useState(false);
@@ -114,8 +121,8 @@ export default function Player() {
         const torque = xyz(0, 0, 0);
 
         // Set impulse and torque strengths
-        const impulseStrength = 1200 * clampedDelta;
-        const torqueStrength = 900 * clampedDelta;
+        const impulseStrength = thrustImpulse * clampedDelta;
+        const torqueStrength = torqueImpulse * clampedDelta;
 
         setYawLeftActive(false);
         setYawRightActive(false);
@@ -242,7 +249,7 @@ export default function Player() {
                     shadow-camera-far={500}
                 />
                 <ambientLight intensity={0.1} color={0xebb18d} />
-                <RigidBody ref={shipRigidBodyRef} canSleep={false} colliders={false} position={[0, 100, 0]} linearDamping={0.01} angularDamping={0.1}  >
+                <RigidBody ref={shipRigidBodyRef} canSleep={false} colliders={false} position={[0, 100, 0]} linearDamping={linearDamping} angularDamping={angularDamping}  >
                     <CuboidCollider args={[3, 4.5, 3.2]} position={[0, 0.75, 0]} /> {/* Main body */}
                     <CuboidCollider args={[2, 1, 2.4]} position={[0, -4.75, 0.25]} /> {/* Crew section */}
                     <CuboidCollider args={[3.1, 0.8, 3.1]} position={[0, -6.55, -0.6]} rotation={[0, Math.PI / 4, 0]} /> {/* Landing gear */}
