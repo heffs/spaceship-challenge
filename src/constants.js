@@ -6,9 +6,9 @@ const GEOM_TO_COLLISION_RATIO = 4.0;
 const OCTAVES = 6;
 const FREQUENCY = 0.01;
 const LACUNARITY = 2.5;
-const AMPLITUDE = 180.0;
+const AMPLITUDE = 220.0;
 const PERSISTENCE = 0.5;
-const OFFSET = -240;
+const OFFSET = -200;
 
 const SUN_OFFSET = { x: 10, y: 20, z: 10 };
 

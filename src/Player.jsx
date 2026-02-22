@@ -78,7 +78,7 @@ export default function Player() {
                 case "KeyK":
                     const showInstruments = useGame.getState().showInstruments;
                     useGame.setState({ showInstruments: !showInstruments });
-                    break;
+                    break; 
             }
         }
         window.addEventListener("keydown", handleKeyDown);
